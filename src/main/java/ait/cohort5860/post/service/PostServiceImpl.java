@@ -80,13 +80,28 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto deletePost(long postId) {
-        return null;
+        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        postRepository.delete(post);
+
+        return modelMapper.map(post, PostDto.class);
     }
 
     @Override
     @Transactional
     public PostDto updatePost(long postId, NewPostDto newPostDto) {
-        return null;
+
+        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        post.setTitle(newPostDto.getTitle());
+        post.setContent(newPostDto.getContent());
+        if (newPostDto.getTags() != null) {
+            for (String tagName : newPostDto.getTags()) {
+                post.addTag(tagRepository.findById(tagName).orElseGet(
+                        () -> tagRepository.save(new Tag(tagName))));
+            }
+        }
+        postRepository.save(post);
+
+        return  modelMapper.map(post, PostDto.class);
     }
 
     @Override
