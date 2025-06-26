@@ -20,13 +20,13 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/post/{user}")
+    @PostMapping("/post/{author}")
     @ResponseStatus(HttpStatus.CREATED)
-    public PostDto addNewPost(@PathVariable String author, NewPostDto newPostDto) {
+    public PostDto addNewPost(@PathVariable String author, @RequestBody NewPostDto newPostDto) {
         return postService.addNewPost(author, newPostDto);
     }
 
-    @GetMapping("/post{id}")
+    @GetMapping("/post/{id}")
     public PostDto findPostById(@PathVariable long id) {
         return postService.findPostById(id);
     }
@@ -34,11 +34,11 @@ public class PostController {
     @PatchMapping("/post/{id}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable long id) {
-
+        postService.addLike(id);
     }
 
     @PatchMapping("/post/{postId}/comment/{author}")
-    public PostDto addComment(@PathVariable long postId, @PathVariable String author, NewCommentDto newCommentDto) {
+    public PostDto addComment(@PathVariable long postId, @PathVariable String author, @RequestBody NewCommentDto newCommentDto) {
         return postService.addComment(postId, author, newCommentDto);
     }
 
@@ -48,7 +48,7 @@ public class PostController {
     }
 
     @PatchMapping("/post/{postId}")
-    public PostDto updatePost(@PathVariable long postId, NewPostDto newPostDto) {
+    public PostDto updatePost(@PathVariable long postId, @RequestBody NewPostDto newPostDto) {
         return postService.updatePost(postId, newPostDto);
     }
 
