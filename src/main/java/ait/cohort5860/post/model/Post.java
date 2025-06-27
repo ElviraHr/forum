@@ -34,7 +34,7 @@ public class Post {
     private Set<Tag> tags =  new HashSet<>();
     private int likes;
     //указываем отношение между таблицами относительно главной таблицы, в одном посте - много комментов
-    @OneToMany(mappedBy = "post") //поле в Комменте, с которым связано
+    @OneToMany(mappedBy = "post") //поле в Комменте, с которым связано , fetch = fetchtype.eger = жадная загрузка, тащит сразу все. В цикле или стриме. Но лучше ставить над конкретным методом транзакшнал
     private List<Comment> comments =  new ArrayList<>();
 
 

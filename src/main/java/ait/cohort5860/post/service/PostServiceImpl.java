@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -91,31 +93,51 @@ public class PostServiceImpl implements PostService {
     public PostDto updatePost(long postId, NewPostDto newPostDto) {
 
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        post.setTitle(newPostDto.getTitle());
-        post.setContent(newPostDto.getContent());
-        if (newPostDto.getTags() != null) {
-            for (String tagName : newPostDto.getTags()) {
-                post.addTag(tagRepository.findById(tagName).orElseGet(
-                        () -> tagRepository.save(new Tag(tagName))));
+        String content = newPostDto.getContent();
+        if (content != null) {
+            post.setContent(content);
+        }
+        String title = newPostDto.getTitle();
+        if (title != null) {
+            post.setTitle(title);
+        }
+        Set<String> tags = newPostDto.getTags();
+        if (tags != null) {
+            for (String tagName : tags) {
+                Tag tag = tagRepository.findById(tagName)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                post.addTag(tag);
             }
         }
-        postRepository.save(post);
-
-        return  modelMapper.map(post, PostDto.class);
+        post = postRepository.save(post);
+        return modelMapper.map(post, PostDto.class);
     }
 
     @Override
-    public List<PostDto> findPostsByTags(Set<String> tags) {
-        return List.of();
-    }
-
-    @Override
-    public List<PostDto> findPostsByPeriod(LocalDate startDate, LocalDate endDate) {
-        return List.of();
-    }
-
-    @Override
+    @Transactional(readOnly = true)
     public List<PostDto> findPostByAuthor(String author) {
-        return List.of();
+        return postRepository.findByAuthorIgnoreCase(author)
+                .map(p ->modelMapper.map(p, PostDto.class))
+                .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostDto> findPostsByTags(Set<String> tags) {
+        return postRepository.findDistinctByTagsNameInIgnoreCase(tags)
+                .map(p -> modelMapper.map(p, PostDto.class))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostDto> findPostsByPeriod(LocalDate dateFrom, LocalDate dateTo) {
+        LocalDateTime from = dateFrom.atStartOfDay();
+        LocalDateTime to = dateTo.atTime(LocalTime.MAX);
+        return postRepository.findByDateCreatedBetween(from, to)
+                .map(p -> modelMapper.map(p, PostDto.class))
+                .toList();
+    }
+
+
 }
