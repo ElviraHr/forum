@@ -21,20 +21,33 @@ import java.util.stream.Collectors;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private long id;
     @Setter
+    @Column(name = "title")
     private String title;
     @Setter
+    @Column(name = "content")
     private String content;
     @Setter
+    @Column(name = "author")
     private String author;
+    @Column(name = "date_created")
     private LocalDateTime dateCreated = LocalDateTime.now();
+    @Column(name = "likes")
+    private int likes;
     //необходимо указать родительскую сущность. Издатель может быть без книги, но книга без издателя быть не может. Родительская сущность - Издательство (отношение родительская - дочерняя сущность)
     @ManyToMany
+    @JoinTable(
+            name = "posts_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_name")
+
+    )
     private Set<Tag> tags =  new HashSet<>();
-    private int likes;
+
     //указываем отношение между таблицами относительно главной таблицы, в одном посте - много комментов
-    @OneToMany(mappedBy = "post") //поле в Комменте, с которым связано , fetch = fetchtype.eger = жадная загрузка, тащит сразу все. В цикле или стриме. Но лучше ставить над конкретным методом транзакшнал
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL) //поле в Комменте, с которым связано , fetch = fetchtype.eger = жадная загрузка, тащит сразу все. В цикле или стриме. Но лучше ставить над конкретным методом транзакшнал
     private List<Comment> comments =  new ArrayList<>();
 
 

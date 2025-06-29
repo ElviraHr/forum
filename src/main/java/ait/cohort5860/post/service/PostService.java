@@ -19,9 +19,4 @@ public interface PostService {
     List<PostDto> findPostsByTags(Set<String> tags);
     List<PostDto> findPostsByPeriod(LocalDate startDate, LocalDate endDate);
     List<PostDto> findPostByAuthor(String author);
-
-
-
-
-
 }
