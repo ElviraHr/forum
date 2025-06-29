@@ -35,17 +35,20 @@ public class PostServiceImpl implements PostService {
     @Transactional //all method executed in transaction
     public PostDto addNewPost(String author, NewPostDto newPostDto) {
         Post post = new Post(newPostDto.getTitle(), newPostDto.getContent(), author);
-        Set<String> tags = newPostDto.getTags();
         //Handle tags
+        return getPostDto(newPostDto, post);
+    }
+
+    private PostDto getPostDto(NewPostDto newPostDto, Post post) {
+        Set<String> tags = newPostDto.getTags();
         if (tags != null) {
             for (String tagName : tags) {
-                Tag tag = tagRepository.findById(tagName).orElseGet(
-                        () -> tagRepository.save(new Tag(tagName))
-                );
+                Tag tag = tagRepository.findById(tagName)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
                 post.addTag(tag);
             }
         }
-        postRepository.save(post);
+        post = postRepository.save(post);
         return modelMapper.map(post, PostDto.class); //make DTO-obj
     }
 
@@ -68,13 +71,12 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
 
-        Comment comment = new Comment(author, newCommentDto.getComment());
-
-        post.addComment(comment);
+        Comment comment = new Comment(author, newCommentDto.getMessage());
         comment.setPost(post);
+        post.addComment(comment);
 
         commentRepository.save(comment);
-        postRepository.save(post);
+        //postRepository.save(post); мы находимся в репозитори поста, поэтому транзакция будет сохранена автоматически, сейвать надо только коммент
 
         return modelMapper.map(post, PostDto.class);
     }
@@ -101,16 +103,7 @@ public class PostServiceImpl implements PostService {
         if (title != null) {
             post.setTitle(title);
         }
-        Set<String> tags = newPostDto.getTags();
-        if (tags != null) {
-            for (String tagName : tags) {
-                Tag tag = tagRepository.findById(tagName)
-                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
-                post.addTag(tag);
-            }
-        }
-        post = postRepository.save(post);
-        return modelMapper.map(post, PostDto.class);
+        return getPostDto(newPostDto, post);
     }
 
     @Override
