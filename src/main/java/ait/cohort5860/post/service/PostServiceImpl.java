@@ -35,18 +35,8 @@ public class PostServiceImpl implements PostService {
     @Transactional //all method executed in transaction
     public PostDto addNewPost(String author, NewPostDto newPostDto) {
         Post post = new Post(newPostDto.getTitle(), newPostDto.getContent(), author);
-        Set<String> tags = newPostDto.getTags();
-        //Handle tags
-        if (tags != null) {
-            for (String tagName : tags) {
-                Tag tag = tagRepository.findById(tagName).orElseGet(
-                        () -> tagRepository.save(new Tag(tagName))
-                );
-                post.addTag(tag);
-            }
-        }
-        postRepository.save(post);
-        return modelMapper.map(post, PostDto.class); //make DTO-obj
+
+        return getPostDto(newPostDto, post);
     }
 
     @Override
@@ -101,15 +91,20 @@ public class PostServiceImpl implements PostService {
         if (title != null) {
             post.setTitle(title);
         }
+        return getPostDto(newPostDto, post);
+    }
+
+    private PostDto getPostDto(NewPostDto newPostDto, Post post) {
         Set<String> tags = newPostDto.getTags();
         if (tags != null) {
             for (String tagName : tags) {
-                Tag tag = tagRepository.findById(tagName)
-                        .orElseGet(() -> tagRepository.save(new Tag(tagName)));
+                Tag tag = tagRepository.findById(tagName).orElseGet(
+                        () -> tagRepository.save(new Tag(tagName))
+                );
                 post.addTag(tag);
             }
         }
-        post = postRepository.save(post);
+        postRepository.save(post);
         return modelMapper.map(post, PostDto.class);
     }
 
