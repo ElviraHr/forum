@@ -71,7 +71,7 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
 
-        Comment comment = new Comment(author, newCommentDto.getMessage());
+        Comment comment = new Comment(author, newCommentDto.getNessage());
         comment.setPost(post);
         post.addComment(comment);
 
