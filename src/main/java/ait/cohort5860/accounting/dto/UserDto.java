@@ -16,6 +16,7 @@ public class UserDto {
     private String firstName;
     @Setter
     private String lastName;
+    @Singular
     private Set<String> roles;
 
 
